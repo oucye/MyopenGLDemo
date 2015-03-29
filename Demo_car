@@ -1,0 +1,273 @@
+#include "stdafx.h"
+#include <gl/glut.h>
+#define PI 3.1415926f
+
+// 绘制立方体
+
+
+// 将立方体的八个顶点保存到一个数组里面 
+
+static const float vertex_list[][3] = 
+{ 
+    1.0f, -1.0f, -2.0f, 
+    1.0f, -1.0f, 2.0f, 
+    -1.0f, -1.0f, 2.0f, 
+	-1.0f,-1.0f, -2.0f, 
+    1.0f, 1.0f, -2.0f, 
+    1.0f, 1.0f, 2.0f, 
+    -1.0f, 1.0f, 2.0f, 
+    -1.0f, 1.0f, -2.0f, 
+}; 
+
+// 将要使用的顶点的序号保存到一个数组里面 
+
+static const GLint index_list[][4] = {
+    0, 1, 2, 3,
+    0, 1, 5, 4,
+    0, 3, 7, 4,
+    4, 5, 6, 7,
+    1, 2, 6, 5,
+    2, 6, 7, 3,
+};
+
+static const GLdouble index_color[][3]={
+     100, 100, 0,
+	 0, 100, 100,
+	 100, 0 , 100,
+	 200, 0, 0,
+	 0, 200, 0,
+	 0, 0, 200
+};
+
+GLfloat rotate_left = 0;
+
+// 绘制立方体
+
+void DrawCube(void)
+{
+    int i,j;
+   glBegin(GL_QUADS);
+for(i=0; i<6; ++i)
+	{// 有六个面，循环六次
+		glColor3f(index_color[i][0], index_color[i][1], index_color[i][2]);
+    for(j=0; j<4; ++j)     // 每个面有四个顶点，循环四次
+        glVertex3fv(vertex_list[index_list[i][j]]);
+}
+glEnd();
+
+}
+
+static float rotate = 0, rotate1 = 0, extra_rotate = 0;
+static int times = 0, up_see = 0, left_see = 0;
+static GLfloat radies = 0.5f;
+
+void drawlines()
+{
+	glColor3f(0, 0, 0);
+	
+	glEnable(GL_POLYGON_SMOOTH_HINT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // Antialias the lines  
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE); 
+	glLineWidth(10);
+	glBegin(GL_LINES);
+		for(int i = 0; i < 4; i++)
+		{
+			glVertex3f(0.5f * sin(rotate + acos(-1.0) / 4.0 * i), 0.5f * cos(rotate + acos(-1.0) / 4.0 * i), 0.000);
+			glVertex3f(-0.5f * sin( rotate + acos(-1.0) / 4.0 * i), -0.5f * cos(rotate + acos(-1.0) / 4.0 * i), 0.000);
+		}
+	glEnd();
+	glColor3f(255, 255, 0.0);
+	glDisable(GL_POLYGON_SMOOTH_HINT);
+	glDisable(GL_BLEND);
+}
+
+void drawCylinder()
+{
+	GLUquadricObj *cylinder_obj1;
+	GLUquadricObj *cylinder_obj2;
+
+	glTranslatef(0.9, -1, -1.5);
+    glRotatef(90, 0, 1, 0);
+	glRotatef(rotate_left, 0, 1, 0);
+	cylinder_obj1=gluNewQuadric();
+	cylinder_obj2 = gluNewQuadric();
+	gluCylinder(cylinder_obj1, 0.5, 0.5, 0.2, 1000, 10);
+	gluDisk(cylinder_obj1, 0.0, 0.5, 1000, 10);
+	glTranslatef(0.0,0.0, 0.2);
+	gluDisk(cylinder_obj2, 0.0, 0.5, 1000, 10);
+	drawlines();
+    glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-1.1, -1, -1.5);
+    glRotatef(90, 0, 1, 0);
+	glRotatef(rotate_left, 0, 1, 0);
+	gluCylinder(cylinder_obj1, 0.5, 0.5, 0.2, 1000, 10);
+	gluDisk(cylinder_obj1, 0.0, 0.5, 1000, 10);
+	drawlines();
+		glTranslatef(0.0,0.0, 0.2);
+	gluDisk(cylinder_obj2, 0.0, 0.5, 1000, 10);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.9, -1, 1.5);
+    glRotatef(90, 0, 1, 0);
+	glRotatef(rotate_left, 0, 1, 0);
+	gluCylinder(cylinder_obj1, 0.5, 0.5, 0.2, 1000, 10);
+	gluDisk(cylinder_obj1, 0.0, 0.5, 1000, 10);
+		glTranslatef(0.0,0.0, 0.2);
+	gluDisk(cylinder_obj2, 0.0, 0.5, 1000, 10);
+	drawlines();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-1.1, -1, 1.5);
+    glRotatef(90, 0, 1, 0);
+	glRotatef(rotate_left, 0, 1, 0);
+	gluCylinder(cylinder_obj1, 0.5, 0.5, 0.2, 1000, 10);
+	gluDisk(cylinder_obj1, 0.0, 0.5, 1000, 10);
+	drawlines();
+		glTranslatef(0.0,0.0, 0.2);
+	gluDisk(cylinder_obj2, 0.0, 0.5, 1000, 10);
+	glPopMatrix();
+	glFlush();
+}
+	
+void drawground()
+{
+	static int time_qj = 0;
+	GLfloat fExtent = 50.0f;  
+	GLfloat y = -1.5f;  
+	GLfloat step = 0.5f;
+	static GLfloat qianjin = 0;
+	GLfloat x, z;  
+	int iColor = 0;
+	//printf("%f\n", qianjin);
+	if(time_qj % 10 == 0)
+		qianjin += (0.015 + extra_rotate) / PI;
+	while(qianjin >= 2 * step)
+		qianjin -= 2 * step;
+	while(qianjin < 0)
+		qianjin += 2 * step;
+	
+	glTranslatef(0.0,0.0, -qianjin);
+	glShadeModel(GL_FLAT);  
+	for (x = -fExtent; x <= fExtent; x += step)  
+	{  
+		glBegin(GL_TRIANGLE_STRIP);  
+		for (z = fExtent; z >= -fExtent; z -= step)  
+		{  
+			if ((iColor % 2) == 0)  
+			{  
+				glColor4f(0.0f, 0.0f, 0.0f, 0.5f);  
+			}  
+			else  
+			{  
+				glColor4f(1.0f, 1.0f, 1.0f, 0.5f);  
+			}  
+			glVertex3f(x, y, z);  
+			glVertex3f(x + step, y, z);  
+
+			iColor++;  
+		}
+		glEnd();
+	}
+	//qianjin = (0.015 + extra_rotate) / PI * 0.5;
+	time_qj++;
+	glShadeModel(GL_SMOOTH);
+	glPopMatrix();
+	glPushMatrix();
+}  
+
+void renderScene(void) 
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	
+    glMatrixMode(GL_PROJECTION);//确定观察范围
+    glLoadIdentity();
+    gluPerspective(60,1.0 ,1.0,100);//第一个是角度，第二个是宽高比例，第三个是near，四个是far
+	gluLookAt(8.0 * sin(rotate1)  ,2 + up_see,8.0 * cos(rotate1),  0.0 ,0, 0.0,0.0, 1.0, 0.0);
+    glMatrixMode(GL_MODELVIEW); 
+    glLoadIdentity();
+    glPushMatrix();
+
+     // 平移
+		//glTranslatef(-0.2 * (rotate + 100) / 100.0, 0, 0);
+    //glScalef(2, 1, 1);    // 缩放
+
+	
+   
+  drawground();
+
+    if(times % 10 == 0)
+    {
+		times = 0;
+		rotate += PI - 0.015 - extra_rotate;
+		rotate1 += 0.004;
+		//rotate_left = 0;
+    }
+	glColor3f(255, 255, 0);
+	   times++;
+	
+
+	DrawCube();;drawCylinder();
+    glutSwapBuffers();
+		
+	glDisable(GL_DEPTH_TEST); 
+	
+	glFlush();
+}
+
+void reshape(int w, int h)
+{
+ glViewport(0,0,(GLsizei)w, (GLsizei)h);
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ glFrustum(-1,1,-1,1,1.5,20);
+ gluLookAt(1,0,8,1,0,-1,0,1,0);
+}
+
+void keyboardfunc(unsigned char key, int x, int y)
+{
+	switch(key){
+	case'w':
+		up_see += 1;break;
+	case's':
+		up_see -= 1;break;
+	case 'a':
+		if(extra_rotate <= 0.3)
+		extra_rotate += 0.015;break;
+	case'd':
+		if(extra_rotate >= -0.3)
+		extra_rotate -= 0.015;break;
+	case' ':
+		rotate_left = 0;
+		extra_rotate = -0.015;
+		rotate = PI;break;
+	case'q':
+		if(rotate_left < 10)
+		rotate_left += 5; break;
+	case'e':
+		if(rotate_left > -10)
+		rotate_left -= 5;break;
+	default:
+		break;
+	}
+}
+
+void main(int argc, char **argv) 
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowPosition(100,100);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("GLDemo");
+	glutDisplayFunc(renderScene);
+  
+	glutKeyboardFunc(keyboardfunc);
+	//glutReshapeFunc(reshape); 
+	//glutIdleFunc(renderScene);
+    glutMainLoop();
+}
